@@ -1,0 +1,81 @@
+<h2>Ürünler</h2>
+
+<form #productForm="ngForm" (ngSubmit)="addProduct()" style="margin-bottom:2rem; border:1px solid #eee; padding:1rem; border-radius:8px; max-width:400px;">
+  <h3>Yeni Ürün Ekle</h3>
+  <div style="margin-bottom:0.5rem;">
+    <label>Ad:</label><br>
+    <input name="name" [(ngModel)]="newProduct.name" required minlength="2" #name="ngModel">
+    <div *ngIf="name.invalid && name.touched" style="color:red; font-size:0.9em;">Ad zorunlu (en az 2 karakter).</div>
+  </div>
+  <div style="margin-bottom:0.5rem;">
+    <label>Kritik Seviye:</label><br>
+    <input type="number" name="threshold" [(ngModel)]="newProduct.threshold" required min="0" #threshold="ngModel">
+    <div *ngIf="threshold.invalid && threshold.touched" style="color:red; font-size:0.9em;">0 veya daha büyük olmalı.</div>
+  </div>
+  <div style="margin-bottom:0.5rem;">
+    <label>Başlangıç Stok:</label><br>
+    <input type="number" name="initialStock" [(ngModel)]="newProduct.initialStock" required min="0" #initialStock="ngModel">
+    <div *ngIf="initialStock.invalid && initialStock.touched" style="color:red; font-size:0.9em;">0 veya daha büyük olmalı.</div>
+  </div>
+  <div *ngIf="formError" style="color:red; margin-bottom:0.5rem;">{{ formError }}</div>
+  <button type="submit" [disabled]="productForm.invalid || loadingAdd">Ekle</button>
+  <span *ngIf="loadingAdd">Ekleniyor...</span>
+</form>
+
+<div *ngIf="loading">Yükleniyor...</div>
+<div *ngIf="error" style="color: red;">{{ error }}</div>
+<table *ngIf="!loading && !error && products.length > 0" border="1" cellpadding="8" style="width:100%; margin-top:1rem;">
+  <thead>
+    <tr>
+      <th>Kod</th>
+      <th>Ad</th>
+      <th>Başlangıç Stok</th>
+      <th>Kritik Seviye</th>
+      <th>Mevcut Stok</th>
+      <th>Stok (Roma)</th>
+      <th>Oluşturulma</th>
+      <th>FakeStore ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of products">
+      <td>{{ p.productCode }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.initialStock }}</td>
+      <td>{{ p.threshold }}</td>
+      <td style="font-style:italic; color: {{ p.currentStock < p.threshold ? 'red' : 'green' }};">
+        {{ p.stockInRoman }}
+      </td>
+      <td>{{ p.createdAt | date:'short' }}</td>
+      <td>{{ p.fakeStoreId || '-' }}</td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="!loading && !error && products.length === 0">Hiç ürün yok.</div>
+
+<h2>Dış Ürünler (Fake Store API)</h2>
+<div *ngIf="externalLoading">Yükleniyor...</div>
+<div *ngIf="externalError" style="color: red;">{{ externalError }}</div>
+<table *ngIf="!externalLoading && !externalError && externalProducts.length > 0" border="1" cellpadding="8" style="width:100%; margin-top:1rem;">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Ad</th>
+      <th>Fiyat</th>
+      <th>Kategori</th>
+      <th>Açıklama</th>
+      <th>Görsel</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of externalProducts">
+      <td>{{ p.id }}</td>
+      <td>{{ p.title }}</td>
+      <td>{{ p.price | number:'1.2-2' }} $</td>
+      <td>{{ p.category }}</td>
+      <td>{{ p.description }}</td>
+      <td><img [src]="p.image" alt="görsel" width="50"></td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="!externalLoading && !externalError && externalProducts.length === 0">Hiç dış ürün yok.</div>

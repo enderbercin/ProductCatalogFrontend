@@ -1,0 +1,61 @@
+<h2>Siparişler</h2>
+
+<!-- Otomatik Sipariş Bölümü -->
+<div style="margin-bottom:2rem; border:1px solid #ddd; padding:1rem; border-radius:8px; background:#f9f9f9;">
+  <h3>Kritik Stoklu Ürünler İçin Otomatik Sipariş</h3>
+  <button (click)="checkAndPlaceOrders()" [disabled]="loadingBulkOrder" style="padding:0.5rem 1rem; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">
+    {{ loadingBulkOrder ? 'İşleniyor...' : 'Otomatik Sipariş Ver' }}
+  </button>
+  
+  <div *ngIf="bulkOrderError" style="color:red; margin-top:0.5rem;">{{ bulkOrderError }}</div>
+  
+  <div *ngIf="bulkOrderResult" style="margin-top:1rem; padding:1rem; background:white; border-radius:4px;">
+    <h4>İşlem Sonucu:</h4>
+    <p>Toplam İşlenen: {{ bulkOrderResult.totalProcessed }}</p>
+    <p>Başarılı Siparişler: {{ bulkOrderResult.successfulOrders }}</p>
+    <p>Başarısız Siparişler: {{ bulkOrderResult.failedOrders }}</p>
+    
+    <div *ngIf="bulkOrderResult.results.length > 0" style="margin-top:1rem;">
+      <h5>Detaylar:</h5>
+      <ul>
+        <li *ngFor="let result of bulkOrderResult.results" [style.color]="result.success ? 'green' : 'red'">
+          {{ result.productCode }}: {{ result.message }}
+          <span *ngIf="result.success && result.price">(Fiyat: {{ result.price }}, Tedarikçi: {{ result.supplierName }})</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Sipariş Listesi -->
+<div *ngIf="loading">Yükleniyor...</div>
+<div *ngIf="error" style="color: red;">{{ error }}</div>
+<table *ngIf="!loading && !error && orders.length > 0" border="1" cellpadding="8" style="width:100%; margin-top:1rem;">
+  <thead>
+    <tr>
+      <th>Sipariş ID</th>
+      <th>Ürün Kodu</th>
+      <th>Tedarikçi</th>
+      <th>Fiyat</th>
+      <th>Miktar</th>
+      <th>Durum</th>
+      <th>Oluşturulma</th>
+      <th>Tamamlanma</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let order of orders">
+      <td>{{ order.orderId }}</td>
+      <td>{{ order.productCode }}</td>
+      <td>{{ order.supplierName }}</td>
+      <td>{{ order.price | currency }}</td>
+      <td>{{ order.quantity }}</td>
+      <td [style.color]="order.status === 'Completed' ? 'green' : order.status === 'Failed' ? 'red' : 'orange'">
+        {{ order.status }}
+      </td>
+      <td>{{ order.createdAt | date:'short' }}</td>
+      <td>{{ order.completedAt ? (order.completedAt | date:'short') : '-' }}</td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="!loading && !error && orders.length === 0">Hiç sipariş yok.</div>
