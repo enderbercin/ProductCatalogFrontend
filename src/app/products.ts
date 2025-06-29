@@ -23,7 +23,7 @@ export class Products implements OnInit {
   externalError: string | null = null;
 
   // Ekleme formu için
-  newProduct: CreateProductRequest = { name: '', threshold: 0, initialStock: 0 };
+  newProduct: CreateProductRequest = { name: '', threshold: 0, initialStock: 0, fakeStoreProductId: undefined };
   loadingAdd = false;
   formError: string | null = null;
 
@@ -86,7 +86,7 @@ export class Products implements OnInit {
         next: () => {
           this.productService.create(this.newProduct).subscribe({
             next: () => {
-              this.newProduct = { name: '', threshold: 0, initialStock: 0 };
+              this.newProduct = { name: '', threshold: 0, initialStock: 0, fakeStoreProductId: undefined };
               this.loadingAdd = false;
               this.fetchProducts();
             },
@@ -107,13 +107,26 @@ export class Products implements OnInit {
     // Token varsa direkt ekle
     this.productService.create(this.newProduct).subscribe({
       next: () => {
-        this.newProduct = { name: '', threshold: 0, initialStock: 0 };
+        this.newProduct = { name: '', threshold: 0, initialStock: 0, fakeStoreProductId: undefined };
         this.loadingAdd = false;
         this.fetchProducts();
       },
       error: (err) => {
         this.formError = err?.error?.message || 'Ürün eklenemedi.';
         this.loadingAdd = false;
+      }
+    });
+  }
+
+  orderProduct(product: Product) {
+    this.productService.decreaseStock(product.productCode, 1).subscribe({
+      next: (updated) => {
+        // Güncel ürünü products dizisinde güncelle
+        const idx = this.products.findIndex(p => p.productCode === product.productCode);
+        if (idx > -1) this.products[idx] = updated;
+      },
+      error: (err) => {
+        alert('Stok azaltılamadı!');
       }
     });
   }

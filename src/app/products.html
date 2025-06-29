@@ -17,6 +17,15 @@
     <input type="number" name="initialStock" [(ngModel)]="newProduct.initialStock" required min="0" #initialStock="ngModel">
     <div *ngIf="initialStock.invalid && initialStock.touched" style="color:red; font-size:0.9em;">0 veya daha büyük olmalı.</div>
   </div>
+  <div style="margin-bottom:0.5rem;">
+    <label>Fake Store Ürünü (Opsiyonel):</label><br>
+    <select name="fakeStoreProductId" [(ngModel)]="newProduct.fakeStoreProductId">
+      <option value="">Fake Store ürünü seçme</option>
+      <option *ngFor="let p of externalProducts" [value]="p.id">
+        {{ p.id }} - {{ p.title }}
+      </option>
+    </select>
+  </div>
   <div *ngIf="formError" style="color:red; margin-bottom:0.5rem;">{{ formError }}</div>
   <button type="submit" [disabled]="productForm.invalid || loadingAdd">Ekle</button>
   <span *ngIf="loadingAdd">Ekleniyor...</span>
@@ -29,18 +38,27 @@
     <tr>
       <th>Kod</th>
       <th>Ad</th>
+      <th>Açıklama</th>
+      <th>Kategori</th>
+      <th>Fiyat</th>
+      <th>Görsel</th>
       <th>Başlangıç Stok</th>
       <th>Kritik Seviye</th>
       <th>Mevcut Stok</th>
       <th>Stok (Roma)</th>
       <th>Oluşturulma</th>
       <th>FakeStore ID</th>
+      <th>İşlem</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let p of products">
       <td>{{ p.productCode }}</td>
       <td>{{ p.name }}</td>
+      <td>{{ p.description || '-' }}</td>
+      <td>{{ p.category || '-' }}</td>
+      <td>{{ p.price ? (p.price | number:'1.2-2') + ' $' : '-' }}</td>
+      <td><img *ngIf="p.image" [src]="p.image" alt="görsel" width="50"></td>
       <td>{{ p.initialStock }}</td>
       <td>{{ p.threshold }}</td>
       <td style="font-style:italic; color: {{ p.currentStock < p.threshold ? 'red' : 'green' }};">
@@ -48,6 +66,9 @@
       </td>
       <td>{{ p.createdAt | date:'short' }}</td>
       <td>{{ p.fakeStoreId || '-' }}</td>
+      <td>
+        <button (click)="orderProduct(p)" [disabled]="p.currentStock <= 0">Sipariş Ver</button>
+      </td>
     </tr>
   </tbody>
 </table>

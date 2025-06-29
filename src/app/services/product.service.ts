@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, CreateProductRequest, FakeStoreProduct, ProductStockRoman } from '../models/product.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private apiUrl = 'http://localhost:5164/api/products';
+  private apiUrl = `${environment.apiUrl}/products`;
   private csrfToken: string | null = null;
 
   constructor(private http: HttpClient) {
@@ -65,5 +66,24 @@ export class ProductService {
 
   convertToRoman(number: number): Observable<{ number: number, roman: string }> {
     return this.http.get<{ number: number, roman: string }>(`${this.apiUrl}/utils/roman/${number}`);
+  }
+
+  decreaseStock(productCode: string, amount: number = 1) {
+    if (!this.csrfToken) {
+      // Token yoksa önce bir GET ile token al, sonra POST at
+      return new Observable<Product>(observer => {
+        this.http.get<Product[]>(this.apiUrl, { observe: 'response' }).subscribe(resp => {
+          const token = resp.headers.get('X-CSRF-Token');
+          if (token) this.csrfToken = token;
+          const headers = new HttpHeaders().set('X-CSRF-Token', this.csrfToken || '');
+          this.http.post<Product>(`${this.apiUrl}/${productCode}/decrease-stock?amount=${amount}`, {}, { headers }).subscribe(
+            data => { observer.next(data); observer.complete(); },
+            err => observer.error(err)
+          );
+        }, err => observer.error(err));
+      });
+    }
+    const headers = new HttpHeaders().set('X-CSRF-Token', this.csrfToken || '');
+    return this.http.post<Product>(`${this.apiUrl}/${productCode}/decrease-stock?amount=${amount}`, {}, { headers });
   }
 } 

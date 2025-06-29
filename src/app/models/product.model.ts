@@ -7,6 +7,13 @@ export interface Product {
   createdAt: string;
   updatedAt?: string;
   fakeStoreId?: number;
+  description?: string;
+  category?: string;
+  image?: string;
+  price?: number;
+  ratingRate?: number;
+  ratingCount?: number;
+  isMatched?: boolean;
   stockInRoman: string;
 }
 
@@ -14,6 +21,7 @@ export interface CreateProductRequest {
   name: string;
   threshold: number;
   initialStock: number;
+  fakeStoreProductId?: number;
 }
 
 export interface FakeStoreProduct {
